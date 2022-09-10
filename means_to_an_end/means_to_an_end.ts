@@ -3,36 +3,34 @@ const port = parseInt(Deno.env.get("PORT") || '2345');
 const listener = Deno.listen({ port });
 console.log(`listening on 0.0.0.0:${port}`);
 
-
 const charI = 'I'.charCodeAt(0)
 const charQ = 'Q'.charCodeAt(0)
 
-const data: [number, number][] = [];
-
-function insert(timestamp: number, price: number) {
-    data.push([timestamp, price]);
-}
-
-function query(mintime: number, maxtime: number): number {
-    console.log('query', mintime, maxtime);
-    if (mintime > maxtime) {
-        return 0
-    }
-
-    // calculate mean
-    let sum = 0;
-    let count = 0;
-    for (const entry of data) {
-        if (mintime <= entry[0] && entry[0] <= maxtime) {
-            sum += entry[1]
-            count++;
-        }
-    }
-
-    return Math.ceil(sum / count);
-}
-
 async function handleConnection(reader: BufReader, writer: BufWriter) {
+    const data: [number, number][] = [];
+
+    function insert(timestamp: number, price: number) {
+        data.push([timestamp, price]);
+    }
+    
+    function query(mintime: number, maxtime: number): number {
+        if (mintime > maxtime) {
+            return 0
+        }
+    
+        // calculate mean
+        let sum = 0;
+        let count = 0;
+        for (const entry of data) {
+            if (mintime <= entry[0] && entry[0] <= maxtime) {
+                sum += entry[1]
+                count++;
+            }
+        }
+    
+        return Math.ceil(sum / count);
+    }
+
     const rawBuffer = new ArrayBuffer(9);
     const buffer = new Uint8Array(rawBuffer)
     const view = new DataView(rawBuffer);
