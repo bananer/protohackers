@@ -7,6 +7,7 @@ def start_db(port):
     sock.bind(("0.0.0.0", port))
     data = dict()
     encoding = "utf-8"
+    version = "Snapchat for Databases"
     while True:
         raw_request, addr = sock.recvfrom(1000)
         request = raw_request.decode(encoding)
@@ -14,15 +15,15 @@ def start_db(port):
         if eq_pos == -1:
             # retrieve
             key = request
-            val = data.get(key)
-            if val is None:
-                val = ""
+            val = version if key == "version" else \
+                data[key] if key in data else \
+                ""
             response = key + '=' + val
             sock.sendto(response.encode(encoding), addr)
         else:
             # insert
             key = request[0:eq_pos]
-            value = request[eq_pos+1:]
+            value = request[eq_pos + 1:]
             data[key] = value
 
 
